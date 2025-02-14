@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Property Investment Analysis</title>
+  <style>
+    body {
+      font-family: Montserrat, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 0.5rem;
+    }
+    textarea {
+      height: 150px;
+    }
+    button {
+      background: black;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background: #333;
+    }
+    .toggle-wrapper {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 0.5rem;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background: #004080;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    #premium-label {
+      font-weight: bold;
+      font-size: 1rem;
+    }
+    h2, h3, h4 {
+      color: #004080;
+    }
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      font-weight: bold;
+    }
+    .results-box {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 2px solid black;
+      border-radius: 8px;
+      background: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .results-box h4 {
+      font-size: 1rem;
+      margin: 0 0 0.5rem 0;
+    }
+    .results-box .value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .chart-container {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .output {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .hidden {
+      display: none;
+    }
+    .sub-section {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .sub-section h4 {
+      margin-top: 0;
+      color: #666;
+      font-size: 1rem;
+    }
+    .op-ex-list {
+      margin-top: 1rem;
+    }
+    .op-ex-item {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem 0.5rem;
+      }
+      .results-box .value {
+        font-size: 1.2rem;
+      }
+      .results-box h4 {
+        font-size: 0.9rem;
+      }
+      button {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Toggle: "Basic Inputs" if OFF, "Premium" if ON -->
+    <div class="toggle-wrapper">
+      <label class="switch">
+        <input type="checkbox" id="premium-toggle" />
+        <span class="slider"></span>
+      </label>
+      <span id="premium-label">Basic Inputs</span>
+    </div>
+
+    <!-- STANDARD & PREMIUM SHARED FIELDS -->
+    <div class="input-group">
+      <label for="investment-description">Description of Investment</label>
+      <textarea id="investment-description" placeholder="Describe your investment..."></textarea>
+    </div>
+
+    <!-- Premium Type Section -->
+    <div id="premium-type-section" class="hidden">
+      <div class="input-group">
+        <label for="investment-type">Investment Type</label>
+        <select id="investment-type">
+          <option value="">--Select--</option>
+          <option value="development">Development Project</option>
+          <option value="residential">Residential (Buy-to-Let)</option>
+          <option value="office">Office</option>
+          <option value="retail">Retail</option>
+          <option value="industrial">Industrial</option>
+          <option value="hotel">Hotel</option>
+          <option value="specialty">Specialty</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Purchase Price -->
+    <div class="input-group" id="purchase-price-group">
+      <label for="purchase-price">Purchase Price</label>
+      <input type="number" id="purchase-price" placeholder="Enter purchase price" />
+    </div>
+
+    <!-- Development Inputs -->
+    <div id="dev-inputs-section" class="hidden">
+      <div class="sub-section">
+        <h4>Development Project Inputs</h4>
+        <div class="input-group">
+          <label for="dev-land-cost">Land Cost (Month 1)</label>
+          <input type="number" id="dev-land-cost" placeholder="e.g., 100000" />
+        </div>
+        <div class="input-group">
+          <label for="dev-hard-costs">Hard Construction Costs</label>
+          <input type="number" id="dev-hard-costs" placeholder="e.g., 500000" />
+        </div>
+        <div class="input-group">
+          <label for="dev-soft-costs">Soft Construction Costs (Prof. Fees)</label>
+          <input type="number" id="dev-soft-costs" placeholder="e.g., 400000" />
+        </div>
+        <div class="input-group">
+          <label for="dev-period">Development Period (Months)</label>
+          <input type="number" id="dev-period" placeholder="e.g., 12" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Standard Annual Rent -->
+    <div class="input-group" id="standard-rent-group">
+      <label for="standard-annual-rent">Annual Rent (per annum)</label>
+      <input type="number" id="standard-annual-rent" placeholder="Enter annual rent" />
+    </div>
+
+    <!-- Premium Rent & Expenses -->
+    <div id="premium-rent-expenses-section" class="hidden">
+      <div class="sub-section">
+        <h4>Rental Income & Maintenance</h4>
+        <label for="income-mode">Income Mode</label>
+        <select id="income-mode">
+          <option value="simple">Simple</option>
+          <option value="detailed">Detailed</option>
+        </select>
+
+        <!-- Simple Rent Section -->
+        <div id="simple-rent-section" class="sub-section">
+          <label>Rent Frequency</label>
+          <select id="simple-rent-frequency">
+            <option value="annual">Annual</option>
+            <option value="monthly">Monthly</option>
+          </select>
+          <label>Rent Amount</label>
+          <input type="number" id="simple-rent-input" placeholder="e.g. 1000" />
+        </div>
+
+        <!-- Detailed Rent Section -->
+        <div id="detailed-rent-section" class="sub-section hidden">
+          <label for="detailed-area">Area (SQFT or SQM)</label>
+          <input type="number" id="detailed-area" placeholder="e.g. 2000" />
+          <label for="detailed-rate">Rent per SQFT/SQM per year</label>
+          <input type="number" id="detailed-rate" placeholder="e.g. 10" />
+        </div>
+
+        <!-- Maintenance -->
+        <label>Maintenance Frequency</label>
+        <select id="maintenance-frequency">
+          <option value="annual">Annual</option>
+          <option value="monthly">Monthly</option>
+        </select>
+        <label>Maintenance Amount</label>
+        <input type="number" id="maintenance-amount" placeholder="e.g. 200" />
+      </div>
+
+      <!-- Optional Operating Expenses -->
+      <div class="sub-section">
+        <h4>Optional Operating Expenses</h4>
+        <button id="add-opex-btn">+ Add OpEx Field (up to 4)</button>
+        <div class="op-ex-list" id="op-ex-list"></div>
+      </div>
+
+      <!-- Sales Price -->
+      <div class="sub-section">
+        <h4>Sales Price</h4>
+        <div>
+          <label>
+            <input type="radio" name="sales-method" value="fixed" checked />
+            Fixed Number
+          </label>
+          <label>
+            <input type="radio" name="sales-method" value="percent" />
+            % Variation on Purchase
+          </label>
+          <label>
+            <input type="radio" name="sales-method" value="yield" />
+            Exit Yield
+          </label>
+        </div>
+        <label for="sales-value">Enter Value (Fixed / % / Yield)</label>
+        <input type="number" id="sales-value" placeholder="Value depends on method" />
+      </div>
+    </div>
+
+    <!-- Inflation & Holding Period -->
+    <div class="input-group">
+      <label for="inflation-rate">Inflation Rate (%)</label>
+      <input type="number" id="inflation-rate" placeholder="e.g., 2.5" />
+    </div>
+    <div class="input-group">
+      <label for="holding-period">Holding Period (Years)</label>
+      <input type="number" id="holding-period" placeholder="e.g., 5" />
+    </div>
+
+    <!-- Loan Details -->
+    <h3>Loan</h3>
+    <div class="input-group">
+      <label for="financing-option">Financing Option</label>
+      <select id="financing-option">
+        <option value="equity">Equity Only</option>
+        <option value="loan">Bank Loan & Equity</option>
+      </select>
+    </div>
+    <div id="loan-details" class="hidden">
+      <div class="input-group">
+        <label for="loan-percent">Loan (% of Purchase or Dev Cost)</label>
+        <input type="number" id="loan-percent" placeholder="Enter loan percentage" />
+      </div>
+      <div class="input-group">
+        <label for="interest-rate">Interest Rate (per annum)</label>
+        <input type="number" id="interest-rate" placeholder="Enter interest rate" />
+      </div>
+      <div class="input-group">
+        <label for="amortisation-period">Amortisation Period (Years)</label>
+        <input type="number" id="amortisation-period" placeholder="Enter amortisation period" />
+      </div>
+    </div>
+
+    <!-- Calculation & Results -->
+    <button id="calculate-btn">Calculate</button>
+    <div class="results-box">
+      <div>
+        <h4>Internal Rate of Return (IRR):</h4>
+        <div id="irr-value" class="value">--</div>
+      </div>
+      <div>
+        <h4>Leveraged IRR:</h4>
+        <div id="leveraged-irr-value" class="value">--</div>
+      </div>
+      <div>
+        <h4>Day 1 Yield:</h4>
+        <div id="day1-yield-value" class="value">--</div>
+      </div>
+      <div>
+        <h4>Day 1 Leveraged Yield:</h4>
+        <div id="day1-leveraged-yield-value" class="value">--</div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <h3>Returns Over Time</h3>
+      <canvas id="returns-chart" width="400" height="200"></canvas>
+    </div>
+
+    <!-- Commentary -->
+    <div class="output">
+      <h3>Generated Commentary</h3>
+      <p id="generated-commentary">Commentary will appear here.</p>
+    </div>
+
+    <!-- Download Buttons -->
+    <button id="download-doc">Download Report (Text/.Doc)</button>
+    <button id="download-excel">Download Report (Excel)</button>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    const WORKER_URL = 'https://property-victor-api.halo-lab-test.workers.dev';
+
+    let cashFlows = [], cashFlowDates = [], leveragedCashFlows = [], leveragedDates = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const pToggle = document.getElementById('premium-toggle');
+      const pLabel = document.getElementById('premium-label');
+      const sRentGrp = document.getElementById('standard-rent-group');
+      const sAnnualRent = document.getElementById('standard-annual-rent');
+      const pRentExp = document.getElementById('premium-rent-expenses-section');
+      const pTypeSec = document.getElementById('premium-type-section');
+      const purchaseGrp = document.getElementById('purchase-price-group');
+      const purchase = document.getElementById('purchase-price');
+      const devSec = document.getElementById('dev-inputs-section');
+      const devLand = document.getElementById('dev-land-cost');
+      const devHard = document.getElementById('dev-hard-costs');
+      const devSoft = document.getElementById('dev-soft-costs');
+      const devPeriod = document.getElementById('dev-period');
+      const descEl = document.getElementById('investment-description');
+      const inflation = document.getElementById('inflation-rate');
+      const holding = document.getElementById('holding-period');
+      const incomeMode = document.getElementById('income-mode');
+      const sRentSec = document.getElementById('simple-rent-section');
+      const sRentFreq = document.getElementById('simple-rent-frequency');
+      const sRentInput = document.getElementById('simple-rent-input');
+      const dRentSec = document.getElementById('detailed-rent-section');
+      const dArea = document.getElementById('detailed-area');
+      const dRate = document.getElementById('detailed-rate');
+      const maintFreq = document.getElementById('maintenance-frequency');
+      const maintAmt = document.getElementById('maintenance-amount');
+      const addOpexBtn = document.getElementById('add-opex-btn');
+      const opExList = document.getElementById('op-ex-list');
+      const salesMethods = document.getElementsByName('sales-method');
+      const salesValue = document.getElementById('sales-value');
+      const investmentType = document.getElementById('investment-type');
+      const finOpt = document.getElementById('financing-option');
+      const loanDetails = document.getElementById('loan-details');
+      const loanPct = document.getElementById('loan-percent');
+      const interestRate = document.getElementById('interest-rate');
+      const amort = document.getElementById('amortisation-period');
+      const irrEl = document.getElementById('irr-value');
+      const levIRREl = document.getElementById('leveraged-irr-value');
+      const day1Yield = document.getElementById('day1-yield-value');
+      const day1LevYield = document.getElementById('day1-leveraged-yield-value');
+      const commentary = document.getElementById('generated-commentary');
+      const calcBtn = document.getElementById('calculate-btn');
+      const downloadDoc = document.getElementById('download-doc');
+      const downloadExcel = document.getElementById('download-excel');
+
+      // Toggle Premium
+      pToggle.addEventListener('change', () => {
+        const isP = pToggle.checked;
+        pLabel.textContent = isP ? "Premium" : "Basic Inputs";
+        sRentGrp.classList.toggle('hidden', isP);
+        pRentExp.classList.toggle('hidden', !isP);
+        pTypeSec.classList.toggle('hidden', !isP);
+      });
+
+      // Investment Type
+      investmentType.addEventListener('change', () => {
+        const inv = investmentType.value;
+        const isP = pToggle.checked;
+        if (isP && inv === 'development') {
+          devSec.classList.remove('hidden');
+          purchaseGrp.classList.add('hidden');
+        } else if (isP) {
+          devSec.classList.add('hidden');
+          purchaseGrp.classList.remove('hidden');
+        } else {
+          devSec.classList.add('hidden');
+        }
+      });
+
+      // Financing Option
+      finOpt.addEventListener('change', () => {
+        loanDetails.classList.toggle('hidden', finOpt.value !== 'loan');
+      });
+
+      // Income Mode
+      incomeMode.addEventListener('change', () => {
+        if (incomeMode.value === 'simple') {
+          sRentSec.classList.remove('hidden');
+          dRentSec.classList.add('hidden');
+        } else {
+          sRentSec.classList.add('hidden');
+          dRentSec.classList.remove('hidden');
+        }
+      });
+
+      // Add up to 4 custom OpEx
+      let opexCount = 0;
+      addOpexBtn.addEventListener('click', () => {
+        if (opexCount >= 4) return;
+        opexCount++;
+        const div = document.createElement('div');
+        div.className = 'op-ex-item';
+        div.innerHTML = `
+          <select class="opex-frequency">
+            <option value="annual">Annual</option>
+            <option value="monthly">Monthly</option>
+          </select>
+          <input type="number" class="opex-amount" placeholder="OpEx ${opexCount}" />
+        `;
+        opExList.appendChild(div);
+      });
+
+      // Calculate Button
+      calcBtn.addEventListener('click', async () => {
+        try {
+          // Clear previous data
+          cashFlows = [];
+          cashFlowDates = [];
+          leveragedCashFlows = [];
+          leveragedDates = [];
+
+          const desc = descEl.value.trim();
+          const holdYears = parseInt(holding.value) || 0;
+          if (!desc || holdYears <= 0) {
+            alert("Please provide a description and valid holding period.");
+            return;
+          }
+
+          // Helper functions
+          let startDate = new Date();
+          function addMonths(d, m) {
+            let date = new Date(d.getTime());
+            date.setMonth(date.getMonth() + m);
+            return date;
+          }
+          function addYears(d, y) {
+            let date = new Date(d.getTime());
+            date.setFullYear(date.getFullYear() + y);
+            return date;
+          }
+
+          const isP = pToggle.checked;
+          const invType = investmentType.value;
+
+          let purchaseP = parseFloat(purchase.value) || 0;
+          let devL = parseFloat(devLand.value) || 0;
+          let devH = parseFloat(devHard.value) || 0;
+          let devS = parseFloat(devSoft.value) || 0;
+          let devM = parseInt(devPeriod.value) || 0;
+          if (devM < 1) devM = 1;
+
+          let infl = parseFloat(inflation.value) / 100 || 0;
+
+          // Rental Income and Expenses
+          let netRent = 0, totalMaint = 0, customOpex = 0;
+          if (!isP) {
+            netRent = parseFloat(sAnnualRent.value) || 0;
+          } else {
+            if (incomeMode.value === 'simple') {
+              const freq = sRentFreq.value;
+              const val = parseFloat(sRentInput.value) || 0;
+              netRent = (freq === 'annual') ? val : val * 12;
+            } else {
+              let area = parseFloat(dArea.value) || 0;
+              let rate = parseFloat(dRate.value) || 0;
+              netRent = area * rate;
+            }
+            const mFreq = maintFreq.value;
+            const mVal = parseFloat(maintAmt.value) || 0;
+            totalMaint = (mFreq === 'monthly') ? mVal * 12 : mVal;
+
+            // Custom OpEx
+            document.querySelectorAll('.op-ex-item').forEach(item => {
+              const f = item.querySelector('.opex-frequency').value;
+              const amt = parseFloat(item.querySelector('.opex-amount').value) || 0;
+              if (f === 'monthly') customOpex += amt * 12;
+              else customOpex += amt;
+            });
+          }
+          let netExp = totalMaint + customOpex;
+
+          // Sales Method
+          let chosenMethod = 'fixed';
+          salesMethods.forEach(radio => {
+            if (radio.checked) chosenMethod = radio.value;
+          });
+          let salesV = parseFloat(salesValue.value) || 0;
+
+          let currentDate = new Date(startDate.getTime());
+
+          // Build Unlevered Cash Flows
+          if (!isP) {
+            // Standard
+            cashFlows.push(-purchaseP);
+            cashFlowDates.push(currentDate);
+
+            let grownP = purchaseP * Math.pow(1 + infl, holdYears);
+            for (let y = 1; y <= holdYears; y++) {
+              currentDate = addYears(currentDate, 1);
+              let rent = netRent * Math.pow(1 + infl, (y - 1));
+              if (y < holdYears) {
+                cashFlows.push(rent);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+              } else {
+                // Final Year: Rent + Sale
+                cashFlows.push(rent);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+                cashFlows.push(grownP);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+              }
+            }
+          } else if (invType === 'development') {
+            // Development
+            let devSum = devL + devH + devS;
+            cashFlows.push(-devL);
+            cashFlowDates.push(new Date(currentDate.getTime()));
+            if (devM > 1) {
+              let monthlyDist = (devH + devS) / (devM - 1);
+              for (let m = 2; m <= devM; m++) {
+                currentDate = addMonths(currentDate, 1);
+                cashFlows.push(-monthlyDist);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+              }
+            }
+            let finalSale = 0;
+            if (chosenMethod === 'fixed') {
+              finalSale = salesV;
+            } else if (chosenMethod === 'percent') {
+              finalSale = devSum * (1 + (salesV / 100));
+            } else {
+              let netBase = netRent - netExp;
+              if (netBase < 0) netBase = 0;
+              let finalYearRent = netBase * Math.pow(1 + infl, (holdYears - 1));
+              let yieldVal = salesV / 100;
+              if (yieldVal <= 0) yieldVal = 0.1;
+              finalSale = finalYearRent / yieldVal;
+            }
+            for (let y = 1; y <= holdYears; y++) {
+              currentDate = addYears(currentDate, 1);
+              let inflRent = (netRent - netExp) * Math.pow(1 + infl, (y - 1));
+              if (inflRent < 0) inflRent = 0;
+              if (y < holdYears) {
+                cashFlows.push(inflRent);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+              } else {
+                cashFlows.push(inflRent);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+                cashFlows.push(finalSale);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+              }
+            }
+          } else {
+            // Premium Non-Development
+            cashFlows.push(-purchaseP);
+            cashFlowDates.push(currentDate);
+            let finalSale = 0;
+            if (chosenMethod === 'fixed') {
+              finalSale = salesV;
+            } else if (chosenMethod === 'percent') {
+              finalSale = purchaseP * (1 + (salesV / 100));
+            } else {
+              let netBase = netRent - netExp;
+              if (netBase < 0) netBase = 0;
+              let finalYearRent = netBase * Math.pow(1 + infl, (holdYears - 1));
+              let yieldVal = salesV / 100;
+              if (yieldVal <= 0) yieldVal = 0.1;
+              finalSale = finalYearRent / yieldVal;
+            }
+            for (let y = 1; y <= holdYears; y++) {
+              currentDate = addYears(currentDate, 1);
+              let inflRent = (netRent - netExp) * Math.pow(1 + infl, (y - 1));
+              if (inflRent < 0) inflRent = 0;
+              if (y < holdYears) {
+                cashFlows.push(inflRent);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+              } else {
+                cashFlows.push(inflRent);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+                cashFlows.push(finalSale);
+                cashFlowDates.push(new Date(currentDate.getTime()));
+              }
+            }
+          }
+
+          // Calculate Unlevered IRR
+          let IRR = 0;
+          try {
+            IRR = calculateXIRR(cashFlows, cashFlowDates) * 100;
+            irrEl.textContent = IRR.toFixed(2) + "%";
+          } catch (e) {
+            irrEl.textContent = "Error";
+          }
+
+          // Calculate Day 1 Yield
+          let day1Y = 0;
+          if (!isP) {
+            day1Y = (netRent / (purchaseP || 1e-9)) * 100;
+          } else if (invType === 'development') {
+            let devSum = devL + devH + devS;
+            if (devSum <= 0) devSum = 1e-9;
+            day1Y = ((netRent - netExp) / devSum) * 100;
+          } else {
+            let base = purchaseP || 1e-9;
+            day1Y = ((netRent - netExp) / base) * 100;
+          }
+          day1Yield.textContent = day1Y.toFixed(2) + "%";
+
+          // Calculate Leveraged IRR
+          leveragedCashFlows = [];
+          leveragedDates = [];
+          let fOpt = finOpt.value;
+          day1LevYield.textContent = "--";
+          levIRREl.textContent = "--";
+
+          if (fOpt === 'loan') {
+            let loanPctVal = parseFloat(loanPct.value) / 100 || 0;
+            let rate = parseFloat(interestRate.value) / 100 || 0;
+            let amortY = parseInt(amort.value) || 1;
+
+            let cumulativeLoan = 0;
+            let loanAmt = 0; // Total loan amount
+
+            for (let i = 0; i < cashFlows.length; i++) {
+              let uflow = cashFlows[i];
+              let udate = cashFlowDates[i];
+
+              if (i <= (isP && invType === 'development' ? devM : 0)) {
+                // During Development Period (for Development projects) or just month 0
+                if (uflow < 0) {
+                  let leveredFlow = uflow * loanPctVal;
+                  leveragedCashFlows.push(leveredFlow);
+                  leveragedDates.push(udate);
+                  cumulativeLoan += -uflow * loanPctVal; // Adding positive loan amount
+                  loanAmt += -uflow * loanPctVal;
+                } else {
+                  // Positive cash flow, fully received
+                  leveragedCashFlows.push(uflow);
+                  leveragedDates.push(udate);
+                }
+              } else {
+                // Post Development Period
+                // Calculate interest
+                let interest = cumulativeLoan * rate;
+
+                // Calculate principal repayment
+                let annualRepayment = loanAmt / amortY;
+                let principalRepayment = annualRepayment;
+                if (principalRepayment > cumulativeLoan) {
+                  principalRepayment = cumulativeLoan;
+                }
+
+                // Levered Cash Flow = Cash Flow - Interest - Principal Repayment
+                let leveredFlow = uflow - interest - principalRepayment;
+                leveragedCashFlows.push(leveredFlow);
+                leveragedDates.push(udate);
+
+                cumulativeLoan -= principalRepayment;
+              }
+            }
+
+            // Calculate Leveraged IRR
+            try {
+              let levIRR = calculateXIRR(leveragedCashFlows, leveragedDates) * 100;
+              levIRREl.textContent = levIRR.toFixed(2) + "%";
+            } catch (e) {
+              levIRREl.textContent = "Error";
+            }
+
+            // Calculate Day 1 Leveraged Yield
+            let day1LevY = 0;
+            if (loanAmt > 0) {
+              day1LevY = ((netRent - (loanAmt * rate)) / loanAmt) * 100;
+            }
+            day1LevYield.textContent = day1LevY.toFixed(2) + "%";
+          }
+
+          // Update Chart
+          let labels = cashFlows.map((_, i) => "Flow " + i);
+          updateChart(labels, cashFlows);
+
+          // Send Data to Zapier Webhook
+          sendReportToZapier({
+            isPremium: isP,
+            description: desc,
+            investmentType: invType || "N/A",
+            purchasePrice: purchaseP,
+            standardAnnualRent: parseFloat(sAnnualRent.value) || 0,
+            landCost: devL,
+            hardConstructionCosts: devH,
+            softConstructionCosts: devS,
+            developmentPeriod: devM,
+            incomeMode: incomeMode.value,
+            simpleRentFrequency: sRentFreq.value,
+            simpleRentInput: parseFloat(sRentInput.value) || 0,
+            detailedArea: parseFloat(dArea.value) || 0,
+            detailedRate: parseFloat(dRate.value) || 0,
+            maintenanceFrequency: maintFreq.value,
+            maintenanceAmount: parseFloat(maintAmt.value) || 0,
+            opExItems: Array.from(document.querySelectorAll('.op-ex-item')).map(item => ({
+              frequency: item.querySelector('.opex-frequency').value,
+              amount: parseFloat(item.querySelector('.opex-amount').value) || 0
+            })),
+            salesMethod: chosenMethod,
+            salesValue: salesV,
+            inflationRate: parseFloat(inflation.value) || 0,
+            holdingPeriod: holdYears,
+            financingOption: fOpt,
+            loanPercent: parseFloat(loanPct.value) || 0,
+            interestRate: parseFloat(interestRate.value) || 0,
+            amortisationPeriod: parseFloat(amort.value) || 0,
+            calculatedInternalRateOfReturn: irrEl.textContent || "--",
+            calculatedLeveragedInternalRateOfReturn: levIRREl.textContent || "--",
+            calculatedDayOneYield: day1Y.toFixed(2) + "%",
+            calculatedDayOneLeveragedYield: day1LevYield.textContent || "--"
+          });
+
+          // Generate Commentary
+          await generateCommentary({
+            isPremium: isP,
+            desc,
+            invType: invType || "N/A",
+            devLand: devL,
+            devHard: devH,
+            devSoft: devS,
+            devMonths: devM,
+            IRR
+          });
+
+        } catch (error) {
+          console.error("Error:", error);
+          alert("An unexpected error occurred. Check the console for details.");
+        }
+      });
+
+      // Download Buttons
+      downloadDoc.addEventListener('click', () => {
+        const isP = pToggle.checked;
+        let docC = commentary.innerHTML.replace(/<br>/g, "\n").replace(/<\/?[^>]+(>|$)/g, "");
+        if (isP) {
+          let html = `
+            <html>
+              <head>
+                <meta charset="UTF-8" />
+                <style>
+                  body { font-family: sans-serif; white-space: pre-wrap; }
+                </style>
+              </head>
+              <body>
+                ${docC}
+              </body>
+            </html>
+          `;
+          let blob = new Blob([html], { type: 'application/msword' });
+          let link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = "Investment_Report.doc";
+          link.click();
+        } else {
+          let blob = new Blob([docC], { type: 'text/plain' });
+          let link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = "Investment_Commentary.txt";
+          link.click();
+        }
+      });
+
+      downloadExcel.addEventListener('click', () => {
+        if (!cashFlows.length) {
+          alert("Please calculate first.");
+          return;
+        }
+
+        const desc = descEl.value.trim();
+        const isP = pToggle.checked;
+        const invType = investmentType.value;
+        const holdY = parseInt(holding.value) || 0;
+        const inf = parseFloat(inflation.value) || 0;
+        const purchaseP = parseFloat(purchase.value) || 0;
+        const sRent = parseFloat(sAnnualRent.value) || 0;
+        const area = parseFloat(dArea.value) || 0;
+        const rate = parseFloat(dRate.value) || 0;
+        const maint = parseFloat(maintAmt.value) || 0;
+        const devL = parseFloat(devLand.value) || 0;
+        const devH = parseFloat(devHard.value) || 0;
+        const devS = parseFloat(devSoft.value) || 0;
+        const devM = parseInt(devPeriod.value) || 0;
+        const loanP = parseFloat(loanPct.value) || 0;
+        const iRate = parseFloat(interestRate.value) || 0;
+        const amortY = parseInt(amort.value) || 0;
+
+        let rows = [];
+        rows.push(["INPUT ASSUMPTIONS"]);
+        rows.push(["Description", desc]);
+        rows.push(["Premium?", isP ? "Yes" : "No"]);
+        rows.push(["Investment Type", invType]);
+        rows.push(["Holding Period (Years)", holdY]);
+        rows.push(["Inflation Rate (%)", inf]);
+
+        if (!isP) {
+          rows.push(["Purchase Price (Standard)", purchaseP]);
+          rows.push(["Annual Rent (Standard)", sRent]);
+        } else if (invType === 'development') {
+          rows.push(["Dev Land Cost", devL]);
+          rows.push(["Dev Hard Costs", devH]);
+          rows.push(["Dev Soft Costs", devS]);
+          rows.push(["Dev Period (Months)", devM]);
+        } else {
+          rows.push(["Purchase Price (Premium)", purchaseP]);
+          rows.push(["Detailed Rent - Area", area]);
+          rows.push(["Detailed Rent - Rate", rate]);
+          rows.push(["Maintenance", maint]);
+        }
+
+        rows.push(["Financing Option", finOpt.value]);
+        if (finOpt.value === "loan") {
+          rows.push(["Loan %", loanP]);
+          rows.push(["Interest Rate (%)", iRate]);
+          rows.push(["Amortisation Period (Years)", amortY]);
+        }
+
+        rows.push([]);
+        rows.push(["CASH FLOWS (Unlevered)"]);
+        rows.push(["Index", "Date", "Amount"]);
+        for (let i = 0; i < cashFlows.length; i++) {
+          let d = cashFlowDates[i];
+          rows.push([i, d.toISOString().split('T')[0], cashFlows[i]]);
+        }
+
+        rows.push([]);
+        rows.push(["CASH FLOWS (Levered)"]);
+        rows.push(["Index", "Date", "Amount"]);
+        for (let i = 0; i < leveragedCashFlows.length; i++) {
+          let d = leveragedDates[i];
+          rows.push([i, d.toISOString().split('T')[0], leveragedCashFlows[i]]);
+        }
+
+        rows.push([]);
+        rows.push(["KEY RETURN METRICS"]);
+        rows.push(["Unlevered IRR (XIRR)", irrEl.textContent]);
+        rows.push(["Leveraged IRR (XIRR)", levIRREl.textContent]);
+        rows.push(["Day 1 Yield", day1Yield.textContent]);
+        rows.push(["Day 1 Leveraged Yield", day1LevYield.textContent]);
+
+        // Adding the disclaimer
+        rows.push([]);
+        rows.push(["DISCLAIMER: Cash flows are provided for indicative purposes only and we accept no liability for errors or incorrect assumptions."]);
+
+        let csv = rows.map(r => r.join(",")).join("\n");
+        let blob = new Blob([csv], { type: 'text/csv' });
+        let link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = "Investment_CashFlows.csv";
+        link.click();
+      });
+    });
+
+    /**
+     * XIRR Calculation using Newton-Raphson
+     */
+    function calculateXIRR(flows, dates, guess = 0.1, maxIter = 100, tol = 1e-6) {
+      if (flows.length !== dates.length) throw new Error("Flows and dates must have the same length");
+      function yf(d1, d2) {
+        return (d2.getTime() - d1.getTime()) / (365.25 * 24 * 3600 * 1000);
+      }
+      let x = guess;
+      for (let i = 0; i < maxIter; i++) {
+        let f0 = 0, f1 = 0;
+        for (let j = 0; j < flows.length; j++) {
+          let t = yf(dates[0], dates[j]);
+          f0 += flows[j] / Math.pow(1 + x, t);
+          f1 += -flows[j] * t / Math.pow(1 + x, t + 1);
+        }
+        let newX = x - f0 / f1;
+        if (Math.abs(newX - x) < tol) return newX;
+        x = newX;
+      }
+      throw new Error("XIRR did not converge");
+    }
+
+    /* Chart Updater */
+    function updateChart(labels, data) {
+      const ctx = document.getElementById('returns-chart').getContext('2d');
+      if (window.myChart) window.myChart.destroy();
+      window.myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Unlevered Returns Over Time',
+            data,
+            borderColor: 'blue',
+            borderWidth: 2,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true } },
+          scales: {
+            x: { title: { display: true, text: 'Flow Index' } },
+            y: { title: { display: true, text: 'Cash Flow' } }
+          }
+        }
+      });
+    }
+
+    /* Send Data to Zapier Webhook */
+    async function sendReportToZapier(payload) {
+      try {
+        const response = await fetch(`${WORKER_URL}/api/report`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            console.log("Data sent to Zapier:", payload);
+            alert("Your data has been sent successfully!");
+          } else {
+            console.error("Zapier Error:", result.error);
+            alert("Error sending data to Zapier. Please try again.");
+          }
+        } else {
+          console.error("Zapier Error:", response.statusText);
+          alert("Error sending data to Zapier. Please try again.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error sending data to Zapier. Please try again.");
+      }
+    }
+
+    /* Commentary Generation */
+    async function generateCommentary({
+      isPremium,
+      desc,
+      invType,
+      devLand,
+      devHard,
+      devSoft,
+      devMonths,
+      IRR,
+    }) {
+      const commentaryEl = document.getElementById('generated-commentary');
+
+      const payload = {
+        isPremium,
+        description: desc,
+        investmentType: invType,
+        landCost: devLand,
+        hardConstructionCosts: devHard,
+        softConstructionCosts: devSoft,
+        developmentPeriod: devMonths,
+        internalRateOfReturn: IRR,
+      };
+
+      try {
+        const response = await fetch(`${WORKER_URL}/api/commentary`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const result = await response.json();
+          commentaryEl.textContent = `Error: ${result?.error || response.statusText}`;
+          return;
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          commentaryEl.innerHTML = data.payload;
+        } else {
+          commentaryEl.textContent = "Error generating commentary. Please try again.";
+        }
+      } catch (err) {
+        console.error(err);
+        commentaryEl.textContent = "Error generating commentary. Please try again.";
+      }
+    }
+  </script>
+</body>
+</html>
